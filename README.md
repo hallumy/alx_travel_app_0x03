@@ -1,110 +1,107 @@
-# Alx Travel App Setup Guide
+# 🧳 ALX Travel App 0x02 — Chapa Payment Integration
 
-## Objective
+A Django-based travel booking platform with integrated **Chapa API** for secure payment handling, supporting **payment initiation**, **verification**, and **status tracking**.
 
-This guide outlines the steps to set up a Django project for the "Alx Travel App" with the necessary dependencies, configure the database, and add Swagger for API documentation.
+This project is a continuation of `alx_travel_app_0x01` and adds full payment functionality using the [Chapa Payment Gateway](https://developer.chapa.co/).
 
 ---
 
-## Instructions
+## 🚀 Features
 
-### 1. **Create a Django Project**
+- ✅ Secure Payment Integration with **Chapa**
+- ✅ Booking with automatic **transaction reference generation**
+- ✅ API endpoints for:
+  - Payment initiation
+  - Payment verification
+- ✅ Payment status tracking: Pending / Completed / Failed
+- ✅ Confirmation email sending (via Celery)
+- ✅ Uses Chapa's **sandbox** for testing payments
 
-#### Set up the Django Project
-Create a new Django project named `alx_travel_app`.
+---
 
-    django-admin startproject alx_travel_app
+## 📁 Project Structure
 
-Create an App within the Project
-
-Inside the alx_travel_app project, create an app named listings:
-
-    cd alx_travel_app
-    python manage.py startapp listings
-
-Install Necessary Packages
-
-Install the required dependencies using pip.
-
-    pip install django djangorestframework django-cors-headers celery rabbitmq drf-yasg
-
-Make sure that you're in a virtual environment (optional but recommended).
-
-### 2. **Configure Settings**
-
-#### Configure for REST Framework and CORS Headers
-
-Open settings.py and add 'rest_framework' and 'corsheaders' to the INSTALLED_APPS:
-
-    INSTALLED_APPS = [
-        'rest_framework',
-        'corsheaders',
-        'listings', 
-    ]
-
-Add CORS middleware to the MIDDLEWARE list in settings.py:
-
-    MIDDLEWARE = [
-        'corsheaders.middleware.CorsMiddleware',
-    ]
+alx_travel_app_0x02/
+├── listings/
+│ ├── models.py # Payment model
+│ ├── views.py # API views for payments
+│ ├── urls.py # Endpoint routing
+│ ├── tasks.py # Celery task for confirmation email
+├── templates/
+│ └── payment_success.html # Simple success page
+├── .env # Store CHAPA_SECRET_KEY securely
+├── README.md # You're here
 
 
-Set up the Database Configuration for MySQL
+---
 
-Install mysqlclient for connecting to a MySQL database:
+## 🔐 Environment Variables
 
-    pip install mysqlclient
+Create a `.env` file in the project root with:
 
-Use the django-environ package to handle database credentials securely. Install django-environ:
+```env
+CHAPA_SECRET_KEY=your_chapa_test_secret_key
 
-    pip install django-environ
+    Get this from your Chapa developer dashboard
 
-In settings.py, add the following lines at the top to load environment variables:
+    .
 
-    import environ
+🔌 API Endpoints
+🔁 Initiate Payment
 
-    # Initialize environment variables
-    env = environ.Env()
-    environ.Env.read_env()  
+URL: /api/initiate-payment/
+Method: POST
 
-    # Database configuration
-    DATABASES = {
-        'default': env.db(),
-    }
+Payload:
 
+{
+  "amount": "100",
+  "email": "test@example.com",
+  "first_name": "John",
+  "last_name": "Doe",
+  "phone_number": "0912345678"
+}
 
-3. Add Swagger Documentation
-Install drf-yasg
+Response:
 
-Install the drf-yasg package for Swagger API documentation:
+{
+  "checkout_url": "https://checkout.chapa.co/...",
+  "booking_reference": "a57f7e8c-..."
+}
 
-    pip install drf-yasg
+✅ Verify Payment
 
-Configure Swagger for Auto Documentation
+URL: /api/verify-payment/?tx_ref=<tx_ref>
+Method: GET
 
-Open urls.py and add the following configuration to enable Swagger documentation:
+Response:
 
-    from rest_framework import permissions
-    from drf_yasg.views import get_schema_view
-    from drf_yasg import openapi
-    from django.urls import path
+{
+  "message": "Payment success"
+}
 
-    # Set up Swagger schema view
-    schema_view = get_schema_view(
-        openapi.Info(
-            title="Alx Travel API",
-            default_version='v1',
-            description="API documentation for the Alx Travel Project",
-            contact=openapi.Contact(email="contact@alxtravel.com"),
-            license=openapi.License(name="BSD License"),
-        ),
-        public=True,
-        permission_classes=(permissions.AllowAny,),
-    )
+💻 Payment Success Page
 
-    urlpatterns = [
-        path('admin/', admin.site.urls),
-        path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-schema'),
-    ]
+URL: /payment-success/?tx_ref=<tx_ref>
+User is redirected here after completing payment on Chapa.
+🧪 Testing Payments (Sandbox)
 
-This will make the Swagger UI available at http://localhost:8000/swagger/ once you run the server.
+Use Chapa's sandbox with the following test card:
+
+Card Number: 5399 8383 8383 8381
+CVV: 470
+Expiry: 10/30
+PIN: 1234
+OTP: 123456
+
+Steps:
+
+    Call /api/initiate-payment/
+
+    Visit checkout_url
+
+    Use the test card
+
+    Complete payment
+
+    Call /api/verify-payment/ to confirm and update status

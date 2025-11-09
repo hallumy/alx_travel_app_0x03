@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV=/home/ahlam/alx_travel_app_0x00/.venv
+VIRTUAL_ENV=/home/ahlam/alx_travel_app_0x03/.venv
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
