@@ -42,7 +42,7 @@ SECRET_KEY = 'django-insecure-_r^do#$4=-(4bh9eooyd94ke(^ni6b7^(u4!yhc*kl_fq=0cg3
 DEBUG = env.bool("DEBUG", default=False)
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'alx-travel-app-0x03-9aza.onrender.com']
 
 
 # Application definition
